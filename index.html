@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHRP - قوانين السيرفر</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --mint: #4ecfa0;
+      --mint-light: #7de0bb;
+      --mint-dark: #2ba878;
+      --mint-glow: rgba(78, 207, 160, 0.15);
+      --mint-border: rgba(78, 207, 160, 0.25);
+      --bg: #080f0c;
+      --bg2: #0c1610;
+      --bg3: #101f16;
+      --card: #0d1a13;
+      --card2: #112019;
+      --text: #e8f5ef;
+      --text-muted: #7aa98a;
+      --red: #ff5555;
+      --gold: #f0c060;
+      --blue: #55aaff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Cairo', Tahoma, Arial, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(78,207,160,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(78,207,160,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      right: 50%;
+      transform: translateX(50%);
+      width: 800px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(78,207,160,0.07) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    nav, .hero, .section-title, .grid-container, footer { position: relative; z-index: 1; }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8,15,12,0.90);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--mint-border);
+      padding: 0 48px;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .logo {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      white-space: nowrap;
+    }
+
+    .logo .sh { color: #fff; }
+    .logo .rp { color: var(--mint); text-shadow: 0 0 20px var(--mint); }
+
+    .logo-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--mint);
+      border-radius: 50%;
+      margin: 0 4px;
+      box-shadow: 0 0 10px var(--mint);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      transition: color 0.2s;
+      position: relative;
+    }
+
+    nav ul li a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      right: 0;
+      width: 0;
+      height: 1px;
+      background: var(--mint);
+      transition: width 0.3s;
+    }
+
+    nav ul li a:hover { color: var(--mint); }
+    nav ul li a:hover::after { width: 100%; }
+
+    .hero {
+      text-align: center;
+      padding: 72px 24px 32px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--mint-glow);
+      border: 1px solid var(--mint-border);
+      border-radius: 100px;
+      padding: 6px 18px;
+      font-size: 12px;
+      color: var(--mint);
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    .hero h1 span { color: var(--mint); }
+
+    .hero p {
+      margin-top: 14px;
+      color: var(--text-muted);
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 1.9;
+    }
+
+    .hero-divider, .section-divider {
+      width: 60px;
+      height: 2px;
+      background: linear-gradient(to left, transparent, var(--mint), transparent);
+      margin: 28px auto 0;
+    }
+
+    .search-wrap {
+      max-width: 860px;
+      margin: 22px auto 0;
+    }
+
+    .search-input {
+      width: 100%;
+      background: rgba(8,15,12,0.88);
+      border: 1px solid var(--mint-border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      color: var(--text);
+      outline: none;
+      font-family: inherit;
+      font-size: 14px;
+      box-shadow: 0 0 30px rgba(78,207,160,0.04);
+    }
+
+    .search-input:focus {
+      border-color: var(--mint);
+      box-shadow: 0 0 0 3px rgba(78,207,160,0.12);
+    }
+
+    .section-title {
+      text-align: center;
+      padding: 48px 24px 24px;
+    }
+
+    .section-title h2 {
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .section-title h2 span { color: var(--mint); }
+
+    .section-title p {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 8px;
+      line-height: 1.8;
+    }
+
+    .grid-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px 60px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .grid-container.col2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-container.col1 { grid-template-columns: 1fr; max-width: 900px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(78,207,160,0.12);
+      border-radius: 16px;
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 1px;
+      background: linear-gradient(to left, transparent, rgba(78,207,160,0.3), transparent);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(78,207,160,0.3);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(78,207,160,0.08);
+    }
+
+    .card-number {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 11px;
+      color: rgba(78,207,160,0.3);
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin: 0 auto 16px;
+      background: var(--mint-glow);
+      border: 1px solid var(--mint-border);
+    }
+
+    .card h2 {
+      font-size: 17px;
+      font-weight: 900;
+      text-align: center;
+      color: var(--mint);
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
+    }
+
+    .card h3 {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--mint-light);
+      margin: 14px 0 8px;
+    }
+
+    .card-divider {
+      height: 1px;
+      background: linear-gradient(to left, transparent, rgba(78,207,160,0.15), transparent);
+      margin-bottom: 18px;
+    }
+
+    .card ul { list-style: none; }
+
+    .card ul li {
+      font-size: 13px;
+      color: #b0ccbc;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.7;
+      font-weight: 600;
+    }
+
+    .card ul li:last-child { border-bottom: none; }
+
+    .bullet {
+      color: var(--mint);
+      font-size: 10px;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .penalty-box {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(78,207,160,0.15);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .penalty-label {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--mint);
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .penalty-value {
+      font-size: 13px;
+      color: #8fbbaa;
+      font-weight: 700;
+      line-height: 1.7;
+    }
+
+    .ban-card {
+      border-color: rgba(255,85,85,0.2);
+      background: linear-gradient(135deg, #0f100c, #140a0a);
+    }
+
+    .ban-card::before { background: linear-gradient(to left, transparent, rgba(255,85,85,0.3), transparent); }
+    .ban-card:hover { border-color: rgba(255,85,85,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(255,85,85,0.08); }
+    .ban-card h2 { color: var(--red); }
+    .ban-card .card-icon { background: rgba(255,85,85,0.1); border-color: rgba(255,85,85,0.2); }
+    .ban-card .bullet { color: var(--red); }
+
+    .gold-card {
+      border-color: rgba(240,192,96,0.2);
+      background: linear-gradient(135deg, #0f0f0a, #141208);
+    }
+
+    .gold-card::before { background: linear-gradient(to left, transparent, rgba(240,192,96,0.3), transparent); }
+    .gold-card:hover { border-color: rgba(240,192,96,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(240,192,96,0.08); }
+    .gold-card h2, .gold-card .bullet, .gold-card .penalty-label { color: var(--gold); }
+    .gold-card .card-icon { background: rgba(240,192,96,0.1); border-color: rgba(240,192,96,0.2); }
+    .gold-card .penalty-box { border-color: rgba(240,192,96,0.2); background: rgba(240,192,96,0.05); }
+    .gold-card .card-number { color: rgba(240,192,96,0.3); }
+
+    .blue-card {
+      border-color: rgba(85,170,255,0.2);
+      background: linear-gradient(135deg, #0a0d14, #080c18);
+    }
+
+    .blue-card::before { background: linear-gradient(to left, transparent, rgba(85,170,255,0.3), transparent); }
+    .blue-card:hover { border-color: rgba(85,170,255,0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(85,170,255,0.08); }
+    .blue-card h2, .blue-card .bullet, .blue-card .penalty-label { color: var(--blue); }
+    .blue-card .card-icon { background: rgba(85,170,255,0.1); border-color: rgba(85,170,255,0.2); }
+    .blue-card .card-number { color: rgba(85,170,255,0.3); }
+
+    .wide { grid-column: span 3; }
+
+    .inner-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    th {
+      background: rgba(78,207,160,0.08);
+      color: var(--mint);
+      font-weight: 900;
+      padding: 10px 14px;
+      text-align: right;
+      font-size: 12px;
+    }
+
+    td {
+      padding: 9px 14px;
+      color: #b0ccbc;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-weight: 600;
+    }
+
+    tr:hover td { background: rgba(78,207,160,0.03); }
+
+    .badge-green, .badge-red, .warn-step {
+      display: inline-block;
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .badge-green { background: rgba(78,207,160,0.12); border: 1px solid rgba(78,207,160,0.25); color: var(--mint); }
+    .badge-red { background: rgba(255,85,85,0.1); border: 1px solid rgba(255,85,85,0.25); color: var(--red); }
+    .ws-warn { background: rgba(240,192,96,0.12); color: var(--gold); border: 1px solid rgba(240,192,96,0.2); }
+    .ws-short { background: rgba(78,207,160,0.1); color: var(--mint); border: 1px solid rgba(78,207,160,0.2); }
+    .ws-med { background: rgba(255,170,85,0.1); color: #ffaa55; border: 1px solid rgba(255,170,85,0.2); }
+    .ws-long { background: rgba(255,85,85,0.1); color: var(--red); border: 1px solid rgba(255,85,85,0.2); }
+    .ws-perm { background: rgba(120,0,0,0.3); color: #ff3333; border: 1px solid rgba(255,0,0,0.3); }
+
+    .notice-box {
+      background: rgba(78,207,160,0.05);
+      border: 1px solid var(--mint-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: #a0c8b0;
+      line-height: 1.9;
+      font-weight: 600;
+    }
+
+    .notice-box.red { background: rgba(255,85,85,0.05); border-color: rgba(255,85,85,0.2); color: #c89898; }
+    .notice-box.gold { background: rgba(240,192,96,0.05); border-color: rgba(240,192,96,0.2); color: #c8b880; }
+
+    .notice-label {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--mint);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .notice-label.red { color: var(--red); }
+    .notice-label.gold { color: var(--gold); }
+
+    footer {
+      text-align: center;
+      border-top: 1px solid var(--mint-border);
+      padding: 28px;
+      color: var(--text-muted);
+      font-size: 12px;
+      letter-spacing: 1px;
+      line-height: 1.8;
+    }
+
+    footer span { color: var(--mint); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 1024px) {
+      nav { padding: 0 24px; }
+      .grid-container { grid-template-columns: repeat(2, 1fr); }
+      .grid-container.col2 { grid-template-columns: repeat(2, 1fr); }
+      .wide { grid-column: span 2; }
+      .inner-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+      nav { padding: 12px 18px; align-items: flex-start; flex-direction: column; }
+      nav ul { gap: 12px; }
+      nav ul li a { font-size: 12px; }
+      .grid-container, .grid-container.col2, .grid-container.col1 { grid-template-columns: 1fr; padding: 0 16px 50px; }
+      .wide { grid-column: span 1; }
+      .inner-grid { grid-template-columns: 1fr; }
+      .hero { padding-top: 48px; }
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <div class="logo">
+      <span class="sh">SH</span><span class="rp">RP</span>
+      <div class="logo-dot"></div>
+    </div>
+    <ul>
+      <li><a href="#violations">المخالفات</a></li>
+      <li><a href="#general">القوانين العامة</a></li>
+      <li><a href="#criminals">الإجرام</a></li>
+      <li><a href="#warns">التحذيرات</a></li>
+      <li><a href="#compensation">التعويض</a></li>
+      <li><a href="#enmity">العداوة</a></li>
+      <li><a href="#safezones">المناطق الآمنة</a></li>
+      <li><a href="#tags">البخاخات</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-badge"><span>◈</span><span>SHRP RULES SYSTEM</span></div>
+    <h1>قوانين <span>السيرفر</span></h1>
+    <p>صفحة شاملة لقوانين الرول بلاي، المخالفات، العقوبات، السرقات، المناطق الآمنة، والتعويضات.</p>
+    <div class="search-wrap">
+      <input id="searchInput" class="search-input" type="text" placeholder="ابحث عن مخالفة أو قانون: RDM، VDM، NVL، هاك، منطقة آمنة، سرقة..." onkeyup="filterCards()" />
+    </div>
+    <div class="hero-divider"></div>
+  </section>
+
+  <div id="violations" class="section-title">
+    <h2>⚠️ آلية <span>المخالفات والعقوبات</span></h2>
+    <p>نظام تدريجي للمخالفات يبدأ بالتحذير وينتهي بالحظر الدائم حسب نوع المخالفة والتكرار.</p>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="grid-container searchable-section">
+    <div class="card searchable" data-keywords="RDM قتل عشوائي تهديد استفزاز طلق عشوائي سرقة بدون قناع">
+      <span class="card-number">01</span><div class="card-icon">⚠️</div><h2>مخالفات عالية الخطورة</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>القتل العشوائي بدون سبب رول بلاي واضح (RDM)</li>
+        <li><span class="bullet">◆</span>الاستفزاز بالأمنة أو التهديد لإجبار لاعب على القتال</li>
+        <li><span class="bullet">◆</span>تخريب سيناريو قائم بين لاعبين أو جهات رسمية</li>
+        <li><span class="bullet">◆</span>إطلاق النار العشوائي داخل المدينة أو المناطق العامة</li>
+        <li><span class="bullet">◆</span>سرقة بدون قناع أو بدون سيناريو مقنع</li>
+        <li><span class="bullet">◆</span>استخدام السلاح بشكل غير منطقي داخل موقف بسيط</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">1: 3 أيام | 2: أسبوع | 3: أسبوعين | تكرار: شهر</span></div>
+    </div>
+
+    <div class="card searchable" data-keywords="NVL تقدير الحياة مقاومة خطف واقعية جثة فايت">
+      <span class="card-number">02</span><div class="card-icon">🎭</div><h2>جودة الرول بلاي</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>عدم تقدير الحياة أثناء التهديد أو التصويب (NVL)</li>
+        <li><span class="bullet">◆</span>مقاومة أكثر من شخص مسلح بدون فرصة واقعية</li>
+        <li><span class="bullet">◆</span>محاولة خطف غير واقعية أو بدون تخطيط</li>
+        <li><span class="bullet">◆</span>ربط معلومات خارج الرول بلاي داخل السيناريو</li>
+        <li><span class="bullet">◆</span>إهانة جثة أو الاستهزاء باللاعب بعد إسقاطه</li>
+        <li><span class="bullet">◆</span>افتعال فايت بدون سبب رول بلاي واضح</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">تحذير | يوم | 3 أيام | أسبوع حسب الضرر</span></div>
+    </div>
+
+    <div class="card searchable" data-keywords="VDM صدم عشوائي مركبة عرقلة جثة رقابة تفتيش">
+      <span class="card-number">03</span><div class="card-icon">🚧</div><h2>عرقلة اللعب</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>الصدم العشوائي بالمركبة بدون سبب (VDM)</li>
+        <li><span class="bullet">◆</span>استخدام المركبة كسلاح بدون سيناريو واضح</li>
+        <li><span class="bullet">◆</span>تهريب أشخاص لا تعرفهم بدون رابط رول بلاي</li>
+        <li><span class="bullet">◆</span>إهانة مسقط أو تحريك جثة بدون سبب</li>
+        <li><span class="bullet">◆</span>التحدث أثناء التفتيش أو تعطيل عمل الرقابة</li>
+        <li><span class="bullet">◆</span>التدخل في سيناريو لا يخصك</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">1: يوم | 2: 3 أيام | 3: أسبوع</span></div>
+    </div>
+
+    <div class="card gold-card searchable" data-keywords="Glitch قلتش ثغرات نقل اموال تدبيل تحلل اعدام ادلة">
+      <span class="card-number">04</span><div class="card-icon">⚖️</div><h2>التلاعب والعدالة</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>استعمال الثغرات أو القلتشات بأي شكل</li>
+        <li><span class="bullet">◆</span>نقل أموال أو ممتلكات بين الشخصيات</li>
+        <li><span class="bullet">◆</span>إعدام بدون أدلة كافية أو بدون سبب واضح</li>
+        <li><span class="bullet">◆</span>تحلل أثناء السيناريو للهروب من المحاسبة</li>
+        <li><span class="bullet">◆</span>التدبيل أو تكرار الموارد بطرق غير شرعية</li>
+        <li><span class="bullet">◆</span>استخدام معلومات خارجية للفوز بالسيناريو</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">أسبوع | أسبوعين | شهر | تصفير | باند نهائي</span></div>
+    </div>
+
+    <div class="card searchable" data-keywords="منطقة امنة home break rp سلاح ابيض نطح">
+      <span class="card-number">05</span><div class="card-icon">🛡️</div><h2>مخالفات بسيطة / منطقة آمنة</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>استخدام سلاح أبيض أو ناري داخل المنطقة الآمنة</li>
+        <li><span class="bullet">◆</span>استخدام HOME أثناء السيناريو</li>
+        <li><span class="bullet">◆</span>الخروج من الرول بلاي (Break RP)</li>
+        <li><span class="bullet">◆</span>عدم التحدث بصيغة الألم عند الإسقاط</li>
+        <li><span class="bullet">◆</span>حمل سلاح ظاهر بالمناطق الآمنة</li>
+        <li><span class="bullet">◆</span>النطح أو الاعتداء داخل المنطقة الآمنة</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">تحذير → 6 ساعات → يوم → 3 أيام</span></div>
+    </div>
+
+    <div class="card searchable" data-keywords="عامة اوف رول سيرفرات ملابس حكومية قيادة صوت اسماء">
+      <span class="card-number">06</span><div class="card-icon">📋</div><h2>مخالفات عامة</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>التحدث خارج الرول بلاي بدون ضرورة</li>
+        <li><span class="bullet">◆</span>تشويه محتوى الرول بلاي أو الاستهزاء بالسيناريو</li>
+        <li><span class="bullet">◆</span>ذكر سيرفرات أخرى أو التلميح لها</li>
+        <li><span class="bullet">◆</span>لبس ملابس حكومية أو عسكرية أو إسعاف بدون وظيفة</li>
+        <li><span class="bullet">◆</span>استخدام أسماء غير لائقة أو غير واقعية</li>
+        <li><span class="bullet">◆</span>القيادة غير الواقعية بشكل متكرر داخل المدينة</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">تحذير | يوم | 3 أيام | أسبوع</span></div>
+    </div>
+
+    <div class="card searchable" data-keywords="وظائف مهنية شرطة اسعاف ميكانيكي مستشفى ورشة تلويت معدات">
+      <span class="card-number">07</span><div class="card-icon">💼</div><h2>مخالفات مهنية</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>استغلال الوظيفة لمصلحة شخصية</li>
+        <li><span class="bullet">◆</span>التلويت خارج نطاق الوظيفة أو بدون سبب</li>
+        <li><span class="bullet">◆</span>القتل أو التهديد داخل المستشفى أو الورشة</li>
+        <li><span class="bullet">◆</span>إهانة مسعف أو شرطي أو ميكانيكي أو موظف رسمي</li>
+        <li><span class="bullet">◆</span>ترك البلاغات أو رفض أداء الدور الوظيفي</li>
+        <li><span class="bullet">◆</span>تسريب معدات الوظيفة للاعبين آخرين</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">إنذار وظيفي | فصل | باند أسبوع | نهائي</span></div>
+    </div>
+
+    <div class="card searchable" data-keywords="صوت مايك موسيقى ازعاج سب شتم اوف رول">
+      <span class="card-number">08</span><div class="card-icon">🎙️</div><h2>مخالفات الصوت والمايك</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>تشغيل موسيقى أو أصوات مزعجة في المايك</li>
+        <li><span class="bullet">◆</span>الصراخ المتكرر بدون سبب داخل السيناريو</li>
+        <li><span class="bullet">◆</span>السب أو الإهانة خارج حدود الرول بلاي</li>
+        <li><span class="bullet">◆</span>استخدام برامج تغيير الصوت بشكل تخريبي</li>
+        <li><span class="bullet">◆</span>فتح المايك وفي الخلفية صوت مزعج مستمر</li>
+        <li><span class="bullet">◆</span>إفشاء معلومات خارج الرول عبر الصوت</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">ميوت | تحذير | باند يوم | باند أسبوع</span></div>
+    </div>
+
+    <div class="card searchable" data-keywords="مطاردة شرطة هروب انقلاب سيارة اصلاح مناطق امنة فصل اتصال">
+      <span class="card-number">09</span><div class="card-icon">🚓</div><h2>مخالفات المطاردات</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>الهروب بطريقة غير واقعية بعد حادث قوي</li>
+        <li><span class="bullet">◆</span>الاستمرار بالقيادة بعد انقلاب خطير بدون تمثيل الإصابة</li>
+        <li><span class="bullet">◆</span>الدخول للمناطق الآمنة للهروب من المطاردة</li>
+        <li><span class="bullet">◆</span>تغيير المركبة أو الملابس بطريقة غير منطقية أثناء المطاردة</li>
+        <li><span class="bullet">◆</span>إصلاح المركبة أثناء المطاردة بدون سيناريو</li>
+        <li><span class="bullet">◆</span>قطع الاتصال أو الخروج للهروب من القبض</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">يوم | 3 أيام | أسبوع | أسبوعين</span></div>
+    </div>
+
+    <div class="card searchable" data-keywords="سرقة خطف رهينة مفاوضات عصابة اجرام">
+      <span class="card-number">10</span><div class="card-icon">⛓️</div><h2>مخالفات السرقة والخطف</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>خطف لاعب بدون سبب أو بدون تمهيد رول بلاي</li>
+        <li><span class="bullet">◆</span>سرقة لاعب في منطقة آمنة أو مكان غير مناسب</li>
+        <li><span class="bullet">◆</span>قتل الرهينة بدون سبب منطقي</li>
+        <li><span class="bullet">◆</span>عدم الالتزام بشروط التفاوض المتفق عليها</li>
+        <li><span class="bullet">◆</span>استغلال عدد غير عادل أو تدخل خارجي في السرقة</li>
+        <li><span class="bullet">◆</span>السرقة بعد الإنعاش مباشرة بدون سيناريو جديد</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">3 أيام | أسبوع | أسبوعين | شهر</span></div>
+    </div>
+
+    <div class="card gold-card searchable" data-keywords="ادارة بلاغ شكوى كذب تضليل دليل مقطع">
+      <span class="card-number">11</span><div class="card-icon">🧾</div><h2>مخالفات التعامل مع الإدارة</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>الكذب على الإدارة أو تضليلها في الشكاوى</li>
+        <li><span class="bullet">◆</span>إخفاء دليل أو تعديل مقطع لإدانة لاعب</li>
+        <li><span class="bullet">◆</span>فتح بلاغات كيدية أو بدون سبب حقيقي</li>
+        <li><span class="bullet">◆</span>عدم احترام قرار الإداري داخل التذكرة</li>
+        <li><span class="bullet">◆</span>التدخل في شكوى لا تخصك</li>
+        <li><span class="bullet">◆</span>تهديد لاعب برفع شكوى بهدف تخريب السيناريو</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label">المحاسبة</span><span class="penalty-value">تحذير | 3 أيام | أسبوع | شهر</span></div>
+    </div>
+
+    <div class="card ban-card searchable" data-keywords="باند نهائي هاك مود منيو عنصرية تحرش قذف جنسي لعن والدين تدبيل نشر سيرفرات">
+      <span class="card-number">12</span><div class="card-icon">🔴</div><h2>باند نهائي دون استئناف</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>استخدام هاك، مود منيو، أو أي برنامج غش</li>
+        <li><span class="bullet">◆</span>نشر سيرفرات أخرى أو روابط دعائية</li>
+        <li><span class="bullet">◆</span>العنصرية أو الإساءة لفئة أو جنسية أو دين</li>
+        <li><span class="bullet">◆</span>التحرش بجميع أنواعه</li>
+        <li><span class="bullet">◆</span>القذف أو الألفاظ الجنسية الصريحة</li>
+        <li><span class="bullet">◆</span>لعن الوالدين أو السب الجسيم</li>
+        <li><span class="bullet">◆</span>بيع أو شراء ممتلكات السيرفر خارج النظام</li>
+      </ul>
+      <div class="penalty-box"><span class="penalty-label" style="color:var(--red)">العقوبة قطعية</span><span class="penalty-value" style="color:#e88">باند نهائي من السيرفر فوراً</span></div>
+    </div>
+  </div>
+
+  <div id="general" class="section-title">
+    <h2>📜 القوانين <span>العامة</span></h2>
+    <p>القواعد الأساسية التي يلتزم بها جميع لاعبي السيرفر.</p>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="grid-container col2 searchable-section">
+    <div class="card searchable" data-keywords="تعريفات rp nvl rdm vdm meta power">
+      <span class="card-number">01</span><div class="card-icon">🧠</div><h2>تعريفات أساسية</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span><strong style="color:var(--mint)">RP:</strong> تقمص الشخصية بالأقوال والأفعال حسب الدور.</li>
+        <li><span class="bullet">◆</span><strong style="color:var(--mint)">NVL:</strong> تقدير حياتك والخوف على نفسك عند التهديد.</li>
+        <li><span class="bullet">◆</span><strong style="color:var(--mint)">RDM:</strong> القتل بدون تهديد أو سبب رول بلاي واضح.</li>
+        <li><span class="bullet">◆</span><strong style="color:var(--mint)">VDM:</strong> استعمال المركبة بالصدم العشوائي.</li>
+        <li><span class="bullet">◆</span><strong style="color:var(--mint)">Meta Gaming:</strong> استخدام معلومات خارجية داخل اللعبة.</li>
+        <li><span class="bullet">◆</span><strong style="color:var(--mint)">Power Gaming:</strong> تصرفات غير واقعية أو إجبارية.</li>
+      </ul>
+    </div>
+
+    <div class="card searchable" data-keywords="قواعد رئيسية اسماء تصوير احترام اوف رول">
+      <span class="card-number">02</span><div class="card-icon">📐</div><h2>القواعد الرئيسية</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>بناء الشخصية وتقمصها بشكل واضح ومحترم.</li>
+        <li><span class="bullet">◆</span>الأسماء تكون واقعية ومحترمة وباللغة الإنجليزية عند الحاجة.</li>
+        <li><span class="bullet">◆</span>عند الإسقاط يسمح بالتحدث عن الألم فقط.</li>
+        <li><span class="bullet">◆</span>عند انقطاع الاتصال يجب العودة وإكمال السيناريو فوراً.</li>
+        <li><span class="bullet">◆</span>يمنع الخروج من السيرفر أثناء السيناريو.</li>
+        <li><span class="bullet">◆</span>تشغيل برنامج التصوير مع الصوت أثناء اللعب شرط أساسي للشكاوى.</li>
+      </ul>
+      <div class="notice-box"><span class="notice-label">تنبيه</span>أي مخالفة: أكمل السيناريو ثم قدم شكوى عبر الديسكورد مع الدليل. الاعتراض داخل الرول يُعد كسراً للرول.</div>
+    </div>
+  </div>
+  
+
+  <div id="criminals" class="section-title">
+    <h2>🔫 قوانين <span>الإجرام</span></h2>
+    <p>القواعد المنظمة لعمليات العصابات والسرقات والرهائن.</p>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="grid-container searchable-section">
+    <div class="card searchable" data-keywords="اجرام رهينة خطف تاكسي عسكري ميكانيكي مسعف مفاوض">
+      <span class="card-number">01</span><div class="card-icon">⛓️</div><h2>قواعد الإجرام العامة</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>يجب فهم معنى الحياة الواقعية سواء مجرماً أو رهينة.</li>
+        <li><span class="bullet">◆</span>يمنع الاتفاق مع أي شخص ليصبح رهينة.</li>
+        <li><span class="bullet">◆</span>يمنع طلب تاكسي أو عسكري أو ميكانيكي وخطفه.</li>
+        <li><span class="bullet">◆</span>مدة رهن الرهينة 20 دقيقة إلا في حال بدأ السيناريو.</li>
+        <li><span class="bullet">◆</span>يمنع سرقة المواطن إلا بسبب عداوة.</li>
+        <li><span class="bullet">◆</span>يمنع الاعتداء على المفاوض من الشرطة أو الإسعاف.</li>
+      </ul>
+    </div>
+
+    <div class="card searchable" data-keywords="سطو مفاوضات عصابة سرقة رهينة تدخل خارجي">
+      <span class="card-number">02</span><div class="card-icon">🏦</div><h2>قواعد السطو والمفاوضات</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>جميع أفراد العصابة يجب تواجدهم داخل المكان عند السطو.</li>
+        <li><span class="bullet">◆</span>يمنع التدخل الخارجي أثناء المفاوضات.</li>
+        <li><span class="bullet">◆</span>يمنع المفاوضة على رهينة غير متواجدة في موقع السرقة.</li>
+        <li><span class="bullet">◆</span>التدخل الخارجي يُحسب ضمن العدد الكلي للسارقين.</li>
+        <li><span class="bullet">◆</span>يجب أخذ التفاوض بجدية تامة وعدم الاستهبال.</li>
+      </ul>
+    </div>
+
+    <div class="card searchable" data-keywords="اسلحة ثقيلة مصرف حرب عصابات سجناء هليكوبتر سيارات فارهة">
+      <span class="card-number">03</span><div class="card-icon">🔫</div><h2>الأسلحة والقوانين الخاصة</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>يُسمح بالأسلحة الثقيلة في سرقة مصرف فما فوق.</li>
+        <li><span class="bullet">◆</span>يُسمح بها في حرب العصابات بعد الإعلان الرسمي.</li>
+        <li><span class="bullet">◆</span>يمنع سرقة أي شيء بدون ارتداء قناع.</li>
+        <li><span class="bullet">◆</span>يمنع تهريب السجناء بالهليكوبتر.</li>
+        <li><span class="bullet">◆</span>يمنع استخدام السيارات الفارهة في السرقات.</li>
+      </ul>
+      <div class="notice-box red"><span class="notice-label red">عقوبة تهريب السجناء</span>بان مباشر لكلٍّ من المهرّب والهارب دون استثناء.</div>
+    </div>
+
+    <div class="card wide searchable" data-keywords="جدول السرقات بقالة منزل مصرف بنك رهينة">
+      <span class="card-number">04</span><div class="card-icon">🗂️</div><h2>جدول السرقات وعدد اللاعبين</h2><div class="card-divider"></div>
+      <table>
+        <thead><tr><th>نوع السرقة</th><th>العدد شرطة - سارق</th><th>رهينة</th></tr></thead>
+        <tbody>
+          <tr><td>سرقة البقالة</td><td>4 - 1</td><td><span class="badge-red">غير مشترطة</span></td></tr>
+          <tr><td>سرقة المنزل</td><td>5 - 1</td><td><span class="badge-red">غير مشترطة</span></td></tr>
+          <tr><td>سرقة الكليك لوفرز</td><td>5 - 1</td><td><span class="badge-red">غير مشترطة</span></td></tr>
+          <tr><td>سرقة محل الأسلحة</td><td>5 - 1</td><td><span class="badge-red">غير مشترطة</span></td></tr>
+          <tr><td>سرقة شاحنة البنك</td><td>6 - 1</td><td><span class="badge-green">مشترطة</span></td></tr>
+          <tr><td>سرقة الصرافة الآلية</td><td>6 - 1</td><td><span class="badge-green">مشترطة</span></td></tr>
+          <tr><td>سرقة المصرف</td><td>7 - 1</td><td><span class="badge-green">مشترطة</span></td></tr>
+          <tr><td>سرقة بنك بليتو</td><td>8 - 1</td><td><span class="badge-green">مشترطة</span></td></tr>
+          <tr><td>سرقة البنك المركزي</td><td>10 - 1</td><td><span class="badge-green">مشترطة</span></td></tr>
+        </tbody>
+      </table>
+      <div class="notice-box">أي سرقة مشترط فيها رهينة وتُنفَّذ بدون رهينة تُعد مخالفة ويتم تطبيق العقوبة بعد انتهاء السيناريو.</div>
+    </div>
+
+    <div class="card ban-card wide searchable" data-keywords="سيارات فارهة ممنوعة سرقات bugatti koenigsegg ferrari lamborghini rolls porsche">
+      <span class="card-number">05</span><div class="card-icon">🚗</div><h2>السيارات الفارهة الممنوعة من السرقات</h2><div class="card-divider"></div>
+      <div class="inner-grid">
+        <ul><li><span class="bullet">◆</span>Koenigsegg Agera RS</li><li><span class="bullet">◆</span>Koenigsegg Jesko</li><li><span class="bullet">◆</span>Bugatti Chiron</li><li><span class="bullet">◆</span>Lamborghini Revuelto</li></ul>
+        <ul><li><span class="bullet">◆</span>Ferrari LaFerrari</li><li><span class="bullet">◆</span>Mercedes AMG ONE</li><li><span class="bullet">◆</span>Mercedes Maybach</li><li><span class="bullet">◆</span>Rolls-Royce Cullinan</li></ul>
+        <ul><li><span class="bullet">◆</span>Rolls-Royce Phantom</li><li><span class="bullet">◆</span>Rolls-Royce Wraith</li><li><span class="bullet">◆</span>Lamborghini SVJ</li><li><span class="bullet">◆</span>Porsche GT2 RS</li></ul>
+      </div>
+      <div class="notice-box red"><span class="notice-label red">يُسمح فقط في:</span>مطاردة مباشرة مع الشرطة ناتجة عن استيقاف أو مواجهة فورية، بشرط أن تكون السيارة مستخدمة منذ بداية المطاردة.</div>
+    </div>
+  </div>
+
+  <div id="warns" class="section-title">
+    <h2>🔔 آلية <span>التحذيرات والباندات</span></h2>
+    <p>نظام العقوبات التدريجي لجميع مخالفات السيرفر.</p>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="grid-container col2 searchable-section">
+    <div class="card searchable" data-keywords="warn تحذير باند دائم هاك قلتش">
+      <span class="card-number">01</span><div class="card-icon">📊</div><h2>سلم العقوبات</h2><div class="card-divider"></div>
+      <table>
+        <thead><tr><th>نوع المخالفة</th><th>العقوبة</th></tr></thead>
+        <tbody>
+          <tr><td>Main Rules / Safe Areas / Criminals</td><td><span class="warn-step ws-warn">تحذير</span> + <span class="warn-step ws-short">باند 6-12 ساعة</span></td></tr>
+          <tr><td>Warn 1</td><td><span class="warn-step ws-med">باند يوم</span></td></tr>
+          <tr><td>Warn 2</td><td><span class="warn-step ws-med">باند 3 أيام</span></td></tr>
+          <tr><td>Warn 3</td><td><span class="warn-step ws-long">باند 7 أيام</span></td></tr>
+          <tr><td>Hack / Glitches / سلوك سيئ</td><td><span class="warn-step ws-perm">باند دائم</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card searchable" data-keywords="ازالة التحذيرات اسبوع شهر">
+      <span class="card-number">02</span><div class="card-icon">🔄</div><h2>آلية إزالة التحذيرات</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>عند إكمال اللعب لمدة أسبوع بدون مخالفات يتم إزالة تحذير واحد.</li>
+        <li><span class="bullet">◆</span>بعد مرور شهر يتم إزالة جميع التحذيرات.</li>
+        <li><span class="bullet">◆</span>جميع المواطنين لهم الأحقية بطلب إزالة التحذيرات.</li>
+        <li><span class="bullet">◆</span>أي تحديثات أو تعديلات تُعلَن في الديسكورد.</li>
+      </ul>
+      <div class="notice-box gold"><span class="notice-label gold">تذكير مهم</span>يرجى متابعة تعميمات الديسكورد باستمرار للاطلاع على التغييرات.</div>
+    </div>
+  </div>
+
+  <div id="compensation" class="section-title">
+    <h2>💰 قوانين <span>التعويض</span></h2>
+    <p>الحالات التي لا يشملها التعويض داخل السيرفر.</p>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="grid-container col2 searchable-section">
+    <div class="card searchable" data-keywords="تعويض اعصار الغاء سجن شنطة لوق">
+      <span class="card-number">01</span><div class="card-icon">🚫</div><h2>حالات لا يُعوَّض عنها</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>الإعصار: من يدخل أثناءه ويخسر أغراضه لا يُعوَّض.</li>
+        <li><span class="bullet">◆</span>استخدام أيتم ثم إلغاؤه لا يشمله التعويض.</li>
+        <li><span class="bullet">◆</span>مشاكل السجن لا تشمل التعويض إلا بحالات استثنائية مع أدلة كاملة.</li>
+        <li><span class="bullet">◆</span>شنطة السيارة إذا فتحها اثنان في نفس الوقت.</li>
+        <li><span class="bullet">◆</span>طلب مراجعة اللوق بدون دليل كافٍ لا يُقبل.</li>
+      </ul>
+    </div>
+
+    <div class="card searchable" data-keywords="شكوى تصوير مقطع معدل تعويض هاك">
+      <span class="card-number">02</span><div class="card-icon">📷</div><h2>قواعد إضافية للتعويض</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>إرسال مقطع مقصوص أو معدّل يمنع التعويض.</li>
+        <li><span class="bullet">◆</span>نراجع اللوق فقط عند وجود هاك تم استخدامه ضدك مباشرة.</li>
+        <li><span class="bullet">◆</span>يجب أن يكون برنامج التصوير شغّالاً بشكل مستمر أثناء اللعب.</li>
+        <li><span class="bullet">◆</span>لن تُقبل الشكوى بدون تسجيل فيديو واضح وغير معدل.</li>
+      </ul>
+      <div class="notice-box red"><span class="notice-label red">شرط أساسي</span>لن تُقبَل أي شكوى أو طلب تعويض بدون دليل واضح.</div>
+    </div>
+  </div>
+
+  <div id="enmity" class="section-title">
+    <h2>⚔️ قوانين <span>العداوة والإعدام</span></h2>
+    <p>القواعد المنظمة للنزاعات بين الأفراد والعصابات.</p>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="grid-container col2 searchable-section">
+    <div class="card searchable" data-keywords="عداوة فيديو نصب خطف طلق تلفظ عصابات صلح">
+      <span class="card-number">01</span><div class="card-icon">🤝</div><h2>قوانين العداوة</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>يجب إثبات العداوة بمقطع فيديو.</li>
+        <li><span class="bullet">◆</span>أسباب العداوة المقبولة: النصب، الخطف، إطلاق النار عليك، التلفظ عليك.</li>
+        <li><span class="bullet">◆</span>تنتهي عداوة العصابات بعد الحرب وفوز أحد الأطراف.</li>
+        <li><span class="bullet">◆</span>تنتهي عداوة الأفراد بالصلح.</li>
+        <li><span class="bullet">◆</span>يجب إعلان العداوة بالقول صراحةً: بيننا عداوة.</li>
+        <li><span class="bullet">◆</span>بدون فيديو يثبت العداوة تعتبر العداوة باطلة.</li>
+      </ul>
+    </div>
+
+    <div class="card searchable" data-keywords="اعدام خائن عسكري شرطة توثيق">
+      <span class="card-number">02</span><div class="card-icon">⚡</div><h2>قوانين الإعدام</h2><div class="card-divider"></div>
+      <ul>
+        <li><span class="bullet">◆</span>يُسمح للعصابات بإعدام أي شخص خائن بشرط سيناريو كامل موثّق.</li>
+        <li><span class="bullet">◆</span>يُسمح للمواطن بإعدام العسكري المسؤول عن إعدام صديقه ضمن رول بلاي موثّق.</li>
+        <li><span class="bullet">◆</span>أي إعدام خارج هذه الحالات يُعد مخالفة صريحة.</li>
+        <li><span class="bullet">◆</span>الشرطة لديها قوانين إعدام خاصة بها ولا تخضع لهذه البنود.</li>
+      </ul>
+      <div class="notice-box red"><span class="notice-label red">تنبيه مهم</span>أي إعدام خارج الحالات المحددة = مخالفة صريحة فورية.</div>
+    </div>
+  </div>
+
+  <div id="safezones" class="section-title">
+    <h2>🛡️ المناطق <span>الآمنة</span></h2>
+    <p>المواقع المحمية التي تُمنع فيها الأعمال الإجرامية.</p>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="grid-container col2 searchable-section">
+    <div class="card blue-card searchable" data-keywords="مناطق امنة محكمة شرطة مطاعم مستشفى ورشة معرض مطار">
+      <span c
